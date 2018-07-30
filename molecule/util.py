@@ -87,6 +87,25 @@ def sysexit_with_message(msg, code=1):
     sysexit(code)
 
 
+def prepend_shebang_interpreter(cmd):
+    cmd_path = cmd._path
+    try:
+        with open(cmd_path, 'rb') as f:
+            if f.read(1) == b'#' and f.read(1) == b'!':
+                cmd._partial_baked_args.insert(0, cmd_path)
+                MAXINTERP = 2048
+                interp = f.readline(MAXINTERP).rstrip()
+                interp_args = interp.split(None, 1)[:2]
+                cmd._path = interp_args[0]
+                baked_args = cmd._partial_baked_args
+                cmd._partial_baked_args = interp_args[1:] + baked_args
+                return cmd
+    except IOError:
+        pass
+
+    return cmd
+
+
 def run_command(cmd, debug=False):
     """
     Execute the given command and returns None.
@@ -95,6 +114,7 @@ def run_command(cmd, debug=False):
     :param debug: An optional bool to toggle debug output.
     :return: ``sh`` object
     """
+    cmd = prepend_shebang_interpreter(cmd)
     if debug:
         # WARN(retr0h): Uses an internal ``sh`` data structure to dig
         # the environment out of the ``sh.command`` object.
