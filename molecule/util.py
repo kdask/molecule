@@ -88,6 +88,12 @@ def sysexit_with_message(msg, code=1):
 
 
 def prepend_shebang_interpreter(cmd):
+    """
+    Stolen from TOX:
+    https://github.com/tox-dev/tox/blob/46fca4c3c817f0a4728552e99e89ace9b2cc6234/tox/venv.py#L420
+
+    prepend interpreter directive (if any) to argument list
+    """
     cmd_path = cmd._path
     try:
         with open(cmd_path, 'rb') as f:
